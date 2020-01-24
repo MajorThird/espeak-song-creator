@@ -6,5 +6,6 @@ class Note(object):
         self.syllable = syllable
 
     def __str__(self):
-        out_string = "Note velocity=%i pitch=%i start_ticks=%i syllable=%s" % (velocity, pitch, start_ticks, syllable)
+        out_string = "Note velocity=%i pitch=%i start_ticks=%i syllable=%s" % (
+            velocity, pitch, start_ticks, syllable)
         return out_string
