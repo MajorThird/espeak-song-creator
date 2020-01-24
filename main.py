@@ -1,7 +1,7 @@
 import configparser
 import argparse
 import midi
-
+import note
 
 
 def is_note_off(event):
@@ -12,25 +12,22 @@ def is_note_off(event):
 
 def read_midi(filename):
     midi_tracks = midi.read_midifile(filename)
-    note_ons = []
-    note_offs = []
+    notes = []
     for t in midi_tracks:
         total_ticks = 0
         for elem in t:
             total_ticks += elem.tick
             if elem.name in ["Note On", "Note Off"]:
-                if is_note_off(elem):
-                    note_offs.append((total_ticks, elem))
-                else:
-                    note_ons.append((total_ticks, elem))
-    note_ons = sorted(note_ons, key=lambda x: x[0])
-    note_offs = sorted(note_offs, key=lambda x: x[0])
-    return note_ons, note_offs
+                if not is_note_off(elem):
+                    n = note.Note(velocity=elem.data[1], pitch=elem.data[0], start_ticks=total_ticks)
+                    notes.append(n)
+    notes = sorted(notes, key=lambda x: x.start_ticks)
+    return notes
 
 
 def midi_tests(config):
     filename = config["DEFAULT"]["PathToMidiFileHuman"]
-    ons, offs = read_midi(filename)
+    notes = read_midi(filename)
 
 
 
