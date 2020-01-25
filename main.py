@@ -53,7 +53,7 @@ def get_speech_wav_with_dynamics(velocity, speech_wav):
     return speech_wav_dynamic
 
 def get_frequency(midi_pitch):
-    reference_freq = 312.0
+    reference_freq = 432.0
     reference_midi_pitch = 69
     f = math.pow(2.0, (midi_pitch - reference_midi_pitch) / 12.0 ) * reference_freq
     return f
