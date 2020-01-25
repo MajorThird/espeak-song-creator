@@ -16,7 +16,7 @@ def render_track(track, config, track_filename):
     for n_index, n in enumerate(track):
         duration = n.end_time - n.start_time
         filename = "./tmp/tmp.wav"
-        for s in range(55,300,1):
+        for s in range(55,300,3):
             freq = get_frequency(n.pitch)
             exec_espeak_command(phoneme=n.phoneme, frequency=freq, path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
 
@@ -53,7 +53,7 @@ def get_speech_wav_with_dynamics(velocity, speech_wav):
     return speech_wav_dynamic
 
 def get_frequency(midi_pitch):
-    reference_freq = 432.0
+    reference_freq = 312.0
     reference_midi_pitch = 69
     f = math.pow(2.0, (midi_pitch - reference_midi_pitch) / 12.0 ) * reference_freq
     return f
@@ -109,7 +109,7 @@ def read_midi(filename):
     midi_tracks = midi.read_midifile(filename)
     resolution = midi_tracks.resolution
     notes_pitchwise = [ [] for i in range(128)]
-    tempo_bpm = 0.0
+    tempo_bpm = 200.0
     for t_index, t in enumerate(midi_tracks):
         total_ticks = 0
         for elem in t:
@@ -140,27 +140,27 @@ def read_midi(filename):
 
     return notes
 
-def group_notes_by_ticks(notes):
-    grouped = [[notes[0]]]
-    for n in notes[1:]:
-        if n.start_ticks == grouped[-1][0].start_ticks:
-            grouped[-1].append(n)
-        else:
-            grouped.append([n])
+# def group_notes_by_ticks(notes):
+#     grouped = [[notes[0]]]
+#     for n in notes[1:]:
+#         if n.start_ticks == grouped[-1][0].start_ticks:
+#             grouped[-1].append(n)
+#         else:
+#             grouped.append([n])
+#
+#     return grouped
 
-    return grouped
 
-
-def get_tracks_from_grouped_notes(groups):
-    tracks = []
-    for group in groups:
-        for n in group:
-            track_no = n.track
-            while len(tracks) < track_no + 1:
-                tracks.append([])
-            tracks[track_no].append(n)
-    tracks_wo_empty = [t for t in tracks if t != []]
-    return tracks_wo_empty
+# def get_tracks_from_grouped_notes(groups):
+#     tracks = []
+#     for group in groups:
+#         for n in group:
+#             track_no = n.track
+#             while len(tracks) < track_no + 1:
+#                 tracks.append([])
+#             tracks[track_no].append(n)
+#     tracks_wo_empty = [t for t in tracks if t != []]
+#     return tracks_wo_empty
 
 def get_tracks_from_notes(notes):
     tracks = []
@@ -172,38 +172,31 @@ def get_tracks_from_notes(notes):
     tracks_wo_empty = [t for t in tracks if t != []]
     return tracks_wo_empty
 
-def humanize(g_quantized, g_human):
-    for g_quantized, g_human in zip(g_quantized,g_human):
-        human_dict = {}
-        for n in g_human:
-            human_dict[n.pitch] = n
-        for n in g_quantized:
-            n.start_ticks = human_dict[n.pitch].start_ticks
-            n.start_time = human_dict[n.pitch].start_time
-            n.end_ticks = human_dict[n.pitch].end_ticks
-            n.end_time = human_dict[n.pitch].end_time
-            n.velocity = human_dict[n.pitch].velocity
+# def humanize(g_quantized, g_human):
+#     for g_quantized, g_human in zip(g_quantized,g_human):
+#         human_dict = {}
+#         for n in g_human:
+#             human_dict[n.pitch] = n
+#         for n in g_quantized:
+#             n.start_ticks = human_dict[n.pitch].start_ticks
+#             n.start_time = human_dict[n.pitch].start_time
+#             n.end_ticks = human_dict[n.pitch].end_ticks
+#             n.end_time = human_dict[n.pitch].end_time
+#             n.velocity = human_dict[n.pitch].velocity
 
 
-def midi_tests(config):
-    filename_human = config["DEFAULT"]["PathToMidiFileHuman"]
-    filename_quantized = config["DEFAULT"]["PathToMidiFile"]
+def convert(config):
+    filename = config["DEFAULT"]["PathToMidiFile"]
 
-    notes_quantized = read_midi(filename_quantized)
+    notes = read_midi(filename)
 
-    grouped_notes_quantized = group_notes_by_ticks(notes_quantized)
-
-    notes_human = read_midi(filename_human)
-    grouped_notes_human = group_notes_by_ticks(notes_human)
-    humanize(grouped_notes_quantized, grouped_notes_human)
-
-
-    tracks = get_tracks_from_notes(notes_quantized)
+    tracks = get_tracks_from_notes(notes)
     phonemes = get_phonemes(config["DEFAULT"]["PathToPhonemes"])
-    for t_index, t in enumerate(reversed(tracks)):
+    for t_index, t in enumerate(tracks):
         for note, phoneme in zip(t, phonemes[t_index]):
             note.phoneme = phoneme
         track_filename = "track_%i.wav" % t_index
+        print("Render track " + str(t_index))
         render_track(t, config, track_filename)
 
 
@@ -234,7 +227,7 @@ def main():
     filename = arguments["config"]
     config = get_config(filename)
 
-    midi_tests(config)
+    convert(config)
 
 
 if __name__ == '__main__':
