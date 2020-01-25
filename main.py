@@ -140,28 +140,6 @@ def read_midi(filename):
 
     return notes
 
-# def group_notes_by_ticks(notes):
-#     grouped = [[notes[0]]]
-#     for n in notes[1:]:
-#         if n.start_ticks == grouped[-1][0].start_ticks:
-#             grouped[-1].append(n)
-#         else:
-#             grouped.append([n])
-#
-#     return grouped
-
-
-# def get_tracks_from_grouped_notes(groups):
-#     tracks = []
-#     for group in groups:
-#         for n in group:
-#             track_no = n.track
-#             while len(tracks) < track_no + 1:
-#                 tracks.append([])
-#             tracks[track_no].append(n)
-#     tracks_wo_empty = [t for t in tracks if t != []]
-#     return tracks_wo_empty
-
 def get_tracks_from_notes(notes):
     tracks = []
     for n in notes:
@@ -171,18 +149,6 @@ def get_tracks_from_notes(notes):
         tracks[track_no].append(n)
     tracks_wo_empty = [t for t in tracks if t != []]
     return tracks_wo_empty
-
-# def humanize(g_quantized, g_human):
-#     for g_quantized, g_human in zip(g_quantized,g_human):
-#         human_dict = {}
-#         for n in g_human:
-#             human_dict[n.pitch] = n
-#         for n in g_quantized:
-#             n.start_ticks = human_dict[n.pitch].start_ticks
-#             n.start_time = human_dict[n.pitch].start_time
-#             n.end_ticks = human_dict[n.pitch].end_ticks
-#             n.end_time = human_dict[n.pitch].end_time
-#             n.velocity = human_dict[n.pitch].velocity
 
 
 def convert(config):
