@@ -4,6 +4,14 @@ import midi
 import note
 
 
+def exec_espeak_command(syllable, language, frequency, pitch, speed, filename, lang):
+    path = ""
+    mute_string = "> /dev/null"
+    program_call = "speak -w %s -v %s -s %i -p %i -e %i \"[[%s]]\" %s" % (filename, language, speed, pitch, frequency, syllable, mute_string)
+    os.system(path + program_call)
+
+
+
 def is_note_off(event):
     velocity = event.data[1]
     name = event.name
