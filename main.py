@@ -18,7 +18,7 @@ def render_track(track, config, track_filename):
         filename = "./tmp/tmp.wav"
         #print(n)
 
-        for s in range(55,300,7):
+        for s in range(55,300,1):
             freq = get_frequency(n.pitch)
             exec_espeak_command(syllable=n.syllable, frequency=freq, path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
 
