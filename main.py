@@ -200,10 +200,12 @@ def midi_tests(config):
     grouped_notes_human = group_notes_by_ticks(notes_human)
     humanize(grouped_notes_quantized, grouped_notes_human)
 
+    phonemes = get_phonemes(config["DEFAULT"]["PathToPhonemes"])
+
     tracks = get_tracks_from_notes(notes_quantized)
     for t_index, t in enumerate(tracks):
         track_filename = "track_%i.wav" % t_index
-        if t_index in [0,1,2,3,4]:
+        if t_index in [0]:
             render_track(t, config, track_filename)
 
 
@@ -212,7 +214,8 @@ def get_config(filename):
     config.read(filename)
     return config
 
-
+def get_phonemes(filename):
+    pass
 
 def main():
     subprocess.call(["rm", "-r", "output"])
