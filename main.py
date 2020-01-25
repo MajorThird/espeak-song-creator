@@ -10,7 +10,7 @@ import math
 
 
 def render_track(track, config, track_filename):
-    os.system("mkdir -p tmp")
+    subprocess.call(["mkdir", "-p", "tmp"])
     total_wav = np.zeros(shape=(0), dtype=np.int16)
     current_time = 0.0
     for n_index, n in enumerate(track):
@@ -37,8 +37,8 @@ def render_track(track, config, track_filename):
                 print("filename: " + str(track_filename) + "  current_time: " + str(current_time))
                 current_time = n.end_time
                 break
-    scipy.io.wavfile.write(track_filename, samples_per_sec, total_wav)
-    os.system("rm -r tmp")
+    scipy.io.wavfile.write("./output/" + track_filename, samples_per_sec, total_wav)
+    subprocess.call(["rm", "-r", "tmp"])
 
 
 def get_silent_wav(duration, samples_per_sec):
@@ -214,6 +214,9 @@ def get_config(filename):
 
 
 def main():
+    subprocess.call(["rm", "-r", "output"])
+    subprocess.call(["mkdir", "-p", "output"])
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", required=False, default="options.cfg", help="path to program options file")
     arguments = vars(parser.parse_args())
@@ -223,13 +226,6 @@ def main():
 
     midi_tests(config)
 
-    # for s in range(60,444,30):
-    #     filename = "%i.wav" % s
-    #     exec_espeak_command(syllable="hE", path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
-    #     from scipy.io import wavfile
-    #     samples_per_sec, wav_data = wavfile.read(filename)
-    #     sample_length = 1.0 / samples_per_sec
-    #     print("samples_per_sec", samples_per_sec, len(wav_data)*sample_length)
 
 if __name__ == '__main__':
     main()
