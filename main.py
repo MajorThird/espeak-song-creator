@@ -18,7 +18,7 @@ def get_pitch(frequency):
     else:
         return 1
 
-def exec_espeak_command(path="./", syllable="a", language="de", frequency=100, speed=100, filename="out.wav"):
+def exec_espeak_command(path="./", syllable="a", language="de", frequency=70, speed=63, filename="out.wav"):
     pitch = get_pitch(frequency)
     mute_string = "> /dev/null"
     program_call = "speak -w %s -v %s -s %i -p %i -e %i \"[[%s]]\" %s" % (filename, language, speed, pitch, frequency, syllable, mute_string)
@@ -138,8 +138,14 @@ def main():
     config = get_config(filename)
 
     midi_tests(config)
-    exec_espeak_command(path=config["DEFAULT"]["PathToESpeak"])
 
+    for s in range(60,444,30):
+        filename = "%i.wav" % s
+        exec_espeak_command(syllable="hE", path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
+        from scipy.io import wavfile
+        samples_per_sec, wav_data = wavfile.read(filename)
+        sample_length = 1.0 / samples_per_sec
+        print("samples_per_sec", samples_per_sec, len(wav_data)*sample_length)
 
 if __name__ == '__main__':
     main()
