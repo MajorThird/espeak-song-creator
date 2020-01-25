@@ -34,7 +34,7 @@ def render_track(track, config, track_filename):
                 speech_wav = get_speech_wav_with_dynamics(n.velocity, speech_wav)
                 total_wav = np.concatenate((total_wav, speech_wav))
                 total_wav = np.concatenate((total_wav, silence_to_compensate_short_audio))
-                print("filename: " + str(track_filename) + "  current_time: " + str(current_time))
+                #print("filename: " + str(track_filename) + "  current_time: " + str(current_time))
                 current_time = n.end_time
                 break
     scipy.io.wavfile.write("./output/" + track_filename, samples_per_sec, total_wav)
@@ -200,13 +200,14 @@ def midi_tests(config):
     grouped_notes_human = group_notes_by_ticks(notes_human)
     humanize(grouped_notes_quantized, grouped_notes_human)
 
-    phonemes = get_phonemes(config["DEFAULT"]["PathToPhonemes"])
 
     tracks = get_tracks_from_notes(notes_quantized)
-    for t_index, t in enumerate(tracks):
+    phonemes = get_phonemes(config["DEFAULT"]["PathToPhonemes"])
+    for t_index, t in enumerate(reversed(tracks)):
+        for note, phoneme in zip(t, phonemes[t_index]):
+            note.phoneme = phoneme
         track_filename = "track_%i.wav" % t_index
-        if t_index in [0]:
-            render_track(t, config, track_filename)
+        render_track(t, config, track_filename)
 
 
 def get_config(filename):
@@ -221,7 +222,8 @@ def get_phonemes(filename):
         for c in content.split(" "):
             if c == "[track]":
                 phoneme_tracks.append([])
-            phoneme_tracks[-1].append(c)
+            else:
+                phoneme_tracks[-1].append(c)
     return phoneme_tracks
 
 def main():
