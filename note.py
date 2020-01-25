@@ -8,6 +8,7 @@ class Note(object):
         self.end_time = end_time
         self.track = track
         self.syllable = syllable
+        self.finished = True
 
     def __str__(self):
         out_string = "Note velocity=%i pitch=%i start_ticks=%i end_ticks=%i start_time=%.3f end_time=%.3f track=%i syllable=%s" % (
