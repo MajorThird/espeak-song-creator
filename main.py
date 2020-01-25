@@ -138,9 +138,6 @@ def read_midi(filename):
     notes = [n for l in notes_pitchwise for n in l]
     notes = sorted(notes, key=lambda x: x.start_ticks)
 
-    # print("Hallo", filename)
-    # for n in notes:
-    #     print(n)
     return notes
 
 def group_notes_by_ticks(notes):
