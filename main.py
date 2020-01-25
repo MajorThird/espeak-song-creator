@@ -38,6 +38,7 @@ def humanize_quantized_notes(grouped_notes_quantized, grouped_notes_human):
     for g_quantized, g_human in zip(grouped_notes_quantized,grouped_notes_human):
         for note in g_quantized:
             note.start_ticks = g_human[0].start_ticks
+            note.velocity = g_human[0].velocity
     return grouped_notes_quantized
 
 def midi_tests(config):
