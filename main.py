@@ -18,7 +18,7 @@ def render_track(track, config, track_filename):
         filename = "./tmp/tmp.wav"
         for s in range(55,300,1):
             freq = get_frequency(n.pitch)
-            exec_espeak_command(syllable=n.syllable, frequency=freq, path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
+            exec_espeak_command(phoneme=n.phoneme, frequency=freq, path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
 
             samples_per_sec, speech_wav = scipy.io.wavfile.read(filename)
             sample_length = 1.0 / samples_per_sec
@@ -74,7 +74,7 @@ def get_pitch(frequency):
     else:
         return 1
 
-def exec_espeak_command(path="./", syllable="a", language="de", frequency=70, speed=63, filename="out.wav"):
+def exec_espeak_command(path="./", phoneme="a", language="de", frequency=70, speed=63, filename="out.wav"):
     pitch = get_pitch(frequency)
     call_list = [path + "speak"]
     call_list.append("-w")
@@ -87,7 +87,7 @@ def exec_espeak_command(path="./", syllable="a", language="de", frequency=70, sp
     call_list.append(str(pitch))
     call_list.append("-e")
     call_list.append(str(frequency))
-    call_list.append("[[%s]]" % syllable)
+    call_list.append("[[%s]]" % phoneme)
     with open(os.devnull, 'wb') as quiet_output:
         subprocess.call(call_list, stdout=quiet_output, stderr=quiet_output)
 
@@ -211,6 +211,7 @@ def get_config(filename):
     config = configparser.ConfigParser()
     config.read(filename)
     return config
+
 
 
 def main():
