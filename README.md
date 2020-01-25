@@ -16,6 +16,6 @@ spoken/sung tones. The built-in method (command-line parameter p) is not suffuci
 * You have to implement a new  command-line parameter to set the frequency. I gave it the letter e. I have not covered this in the aforementioned tutorial.
 
 ## Usage
-* Please check the exemplary MIDI file and the corresponding phonemes in the folder `input` to find out how the files must look like.
-* The paths to eSpeak and the input files must be provided in `options.cfg`.
+* Please check the exemplary MIDI file and the corresponding phonemes in the folder [input](https://github.com/MajorThird/espeak-song-creator/tree/readme/input) to find out how the files must look like.
+* The paths to eSpeak and the input files must be provided in [options.cfg](https://github.com/MajorThird/espeak-song-creator/blob/readme/options.cfg).
 * Run `python main.py`.
