@@ -12,6 +12,7 @@ def is_note_off(event):
 
 def read_midi(filename):
     midi_tracks = midi.read_midifile(filename)
+    resolution = midi_tracks.resolution
     notes = []
     for t_index, t in enumerate(midi_tracks):
         total_ticks = 0
@@ -52,6 +53,11 @@ def get_tracks_from_grouped_notes(groups):
     tracks_wo_empty = [t for t in tracks if t != []]
     return tracks_wo_empty
 
+def render_track(track):
+    for n in track:
+        print(n.start_ticks)
+
+
 def midi_tests(config):
     filename_human = config["DEFAULT"]["PathToMidiFileHuman"]
     filename_quantized = config["DEFAULT"]["PathToMidiFile"]
@@ -63,12 +69,11 @@ def midi_tests(config):
     grouped_notes_human = group_notes_by_ticks(notes_human)
 
     grouped_notes_humanized = humanize_quantized_notes(grouped_notes_quantized, grouped_notes_human)
-    for g in grouped_notes_humanized:
-        for n in g:
-            print(n)
+
 
     tracks = get_tracks_from_grouped_notes(grouped_notes_humanized)
-
+    for t in tracks:
+        render_track(t)
 
 
 def get_config(filename):
