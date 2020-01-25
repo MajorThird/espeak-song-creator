@@ -41,6 +41,17 @@ def humanize_quantized_notes(grouped_notes_quantized, grouped_notes_human):
             note.velocity = g_human[0].velocity
     return grouped_notes_quantized
 
+def get_tracks_from_grouped_notes(groups):
+    tracks = []
+    for group in groups:
+        for n in group:
+            track_no = n.track
+            while len(tracks) < track_no + 1:
+                tracks.append([])
+            tracks[track_no].append(n)
+    tracks_wo_empty = [t for t in tracks if t != []]
+    return tracks_wo_empty
+
 def midi_tests(config):
     filename_human = config["DEFAULT"]["PathToMidiFileHuman"]
     filename_quantized = config["DEFAULT"]["PathToMidiFile"]
@@ -55,6 +66,8 @@ def midi_tests(config):
     for g in grouped_notes_humanized:
         for n in g:
             print(n)
+
+    tracks = get_tracks_from_grouped_notes(grouped_notes_humanized)
 
 
 
