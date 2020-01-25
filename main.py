@@ -16,8 +16,6 @@ def render_track(track, config, track_filename):
     for n_index, n in enumerate(track):
         duration = n.end_time - n.start_time
         filename = "./tmp/tmp.wav"
-        #print(n)
-
         for s in range(55,300,1):
             freq = get_frequency(n.pitch)
             exec_espeak_command(syllable=n.syllable, frequency=freq, path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
@@ -28,7 +26,6 @@ def render_track(track, config, track_filename):
             if audio_duration <= duration:
                 if n.start_time > current_time:
                     diff = n.start_time - current_time
-                    print("compensate", diff)
                     silent_wav = get_silent_wav(diff, samples_per_sec)
                     total_wav = np.concatenate((total_wav, silent_wav))
 
@@ -37,7 +34,7 @@ def render_track(track, config, track_filename):
                 speech_wav = get_speech_wav_with_dynamics(n.velocity, speech_wav)
                 total_wav = np.concatenate((total_wav, speech_wav))
                 total_wav = np.concatenate((total_wav, silence_to_compensate_short_audio))
-                #print(diff_audio_note, "samples_per_sec", samples_per_sec, audio_duration)
+                print("filename: " + str(track_filename) + "  current_time: " + str(current_time))
                 current_time = n.end_time
                 break
     scipy.io.wavfile.write(track_filename, samples_per_sec, total_wav)
@@ -181,7 +178,6 @@ def get_tracks_from_notes(notes):
 def humanize(g_quantized, g_human):
     for g_quantized, g_human in zip(g_quantized,g_human):
         human_dict = {}
-        print(len(g_human), len(g_quantized))
         for n in g_human:
             human_dict[n.pitch] = n
         for n in g_quantized:
