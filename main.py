@@ -215,7 +215,14 @@ def get_config(filename):
     return config
 
 def get_phonemes(filename):
-    pass
+    phoneme_tracks = []
+    with open(filename) as infile:
+        content = infile.read().replace("\n", " ").replace("  ", " ")
+        for c in content.split(" "):
+            if c == "[track]":
+                phoneme_tracks.append([])
+            phoneme_tracks[-1].append(c)
+    return phoneme_tracks
 
 def main():
     subprocess.call(["rm", "-r", "output"])
