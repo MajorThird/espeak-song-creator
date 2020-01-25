@@ -30,7 +30,6 @@ def read_midi(filename):
                     notes.append(n)
             elif elem.name == "Set Tempo":
                 tempo_bpm = elem.get_bpm()
-                print("Tempo: " + str(tempo_bpm))
     notes = sorted(notes, key=lambda x: x.start_ticks)
     return notes
 
