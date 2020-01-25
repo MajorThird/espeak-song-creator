@@ -13,21 +13,37 @@ def is_note_off(event):
 def read_midi(filename):
     midi_tracks = midi.read_midifile(filename)
     notes = []
-    for t in midi_tracks:
+    for t_index, t in enumerate(midi_tracks):
         total_ticks = 0
         for elem in t:
             total_ticks += elem.tick
             if elem.name in ["Note On", "Note Off"]:
                 if not is_note_off(elem):
-                    n = note.Note(velocity=elem.data[1], pitch=elem.data[0], start_ticks=total_ticks)
+                    n = note.Note(velocity=elem.data[1], pitch=elem.data[0], track=t_index, start_ticks=total_ticks)
                     notes.append(n)
     notes = sorted(notes, key=lambda x: x.start_ticks)
     return notes
 
+def group_notes_by_ticks(notes):
+    grouped = [[notes[0]]]
+    for n in notes[1:]:
+        if n.start_ticks == grouped[-1][0].start_ticks:
+            grouped[-1].append(n)
+        else:
+            grouped.append([n])
+
+    return grouped
 
 def midi_tests(config):
+    filename = config["DEFAULT"]["PathToMidiFile"]
     filename = config["DEFAULT"]["PathToMidiFileHuman"]
     notes = read_midi(filename)
+    grouped_notes = group_notes_by_ticks(notes)
+
+    for group in grouped_notes:
+        for n in group:
+            print(n)
+        print("---")
 
 
 
