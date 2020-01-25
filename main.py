@@ -4,17 +4,62 @@ import midi
 import note
 import os
 import subprocess
+import scipy.io.wavfile
+import numpy as np
+import math
 
-def render_track(track, config):
+
+def render_track(track, config, track_filename):
     os.system("mkdir -p tmp")
-    for n in track:
+    total_wav = np.zeros(shape=(0), dtype=np.int16)
+    current_time = 0.0
+    for n_index, n in enumerate(track):
         duration = n.end_time - n.start_time
         filename = "./tmp/tmp.wav"
-        for s in range(60,300,55):
-            exec_espeak_command(syllable=n.syllable, path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
-        #print(n.syllable)
+        #print(n)
+
+        for s in range(55,300,7):
+            freq = get_frequency(n.pitch)
+            exec_espeak_command(syllable=n.syllable, frequency=freq, path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
+
+            samples_per_sec, speech_wav = scipy.io.wavfile.read(filename)
+            sample_length = 1.0 / samples_per_sec
+            audio_duration = len(speech_wav) * sample_length
+            if audio_duration <= duration:
+                if n.start_time > current_time:
+                    diff = n.start_time - current_time
+                    print("compensate", diff)
+                    silent_wav = get_silent_wav(diff, samples_per_sec)
+                    total_wav = np.concatenate((total_wav, silent_wav))
+
+                diff_audio_note = duration - audio_duration
+                silence_to_compensate_short_audio = get_silent_wav(diff_audio_note, samples_per_sec)
+                speech_wav = get_speech_wav_with_dynamics(n.velocity, speech_wav)
+                total_wav = np.concatenate((total_wav, speech_wav))
+                total_wav = np.concatenate((total_wav, silence_to_compensate_short_audio))
+                #print(diff_audio_note, "samples_per_sec", samples_per_sec, audio_duration)
+                current_time = n.end_time
+                break
+    scipy.io.wavfile.write(track_filename, samples_per_sec, total_wav)
     os.system("rm -r tmp")
 
+
+def get_silent_wav(duration, samples_per_sec):
+    number_of_samples = duration * samples_per_sec
+    silent = np.zeros(shape=(int(number_of_samples)), dtype=np.int16)
+    return silent
+
+def get_speech_wav_with_dynamics(velocity, speech_wav):
+    max_velocity = 127.0
+    amplitude = velocity / max_velocity
+    speech_wav_dynamic = (speech_wav * amplitude).astype(np.int16)
+    return speech_wav_dynamic
+
+def get_frequency(midi_pitch):
+    reference_freq = 432.0
+    reference_midi_pitch = 69
+    f = math.pow(2.0, (midi_pitch - reference_midi_pitch) / 12.0 ) * reference_freq
+    return f
 
 
 
@@ -67,6 +112,7 @@ def read_midi(filename):
     midi_tracks = midi.read_midifile(filename)
     resolution = midi_tracks.resolution
     notes_pitchwise = [ [] for i in range(128)]
+    tempo_bpm = 0.0
     for t_index, t in enumerate(midi_tracks):
         total_ticks = 0
         for elem in t:
@@ -90,9 +136,14 @@ def read_midi(filename):
 
             elif elem.name == "Set Tempo":
                 tempo_bpm = elem.get_bpm()
+                # print(tempo_bpm)
 
     notes = [n for l in notes_pitchwise for n in l]
     notes = sorted(notes, key=lambda x: x.start_ticks)
+
+    # print("Hallo", filename)
+    # for n in notes:
+    #     print(n)
     return notes
 
 def group_notes_by_ticks(notes):
@@ -105,14 +156,6 @@ def group_notes_by_ticks(notes):
 
     return grouped
 
-def humanize_quantized_notes(grouped_notes_quantized, grouped_notes_human):
-    for g_quantized, g_human in zip(grouped_notes_quantized,grouped_notes_human):
-        for note in g_quantized:
-            note.start_ticks = g_human[0].start_ticks
-            note.start_time = g_human[0].start_time
-            note.end_time = g_human[0].end_time
-            note.velocity = g_human[0].velocity
-    return grouped_notes_quantized
 
 def get_tracks_from_grouped_notes(groups):
     tracks = []
@@ -125,6 +168,28 @@ def get_tracks_from_grouped_notes(groups):
     tracks_wo_empty = [t for t in tracks if t != []]
     return tracks_wo_empty
 
+def get_tracks_from_notes(notes):
+    tracks = []
+    for n in notes:
+        track_no = n.track
+        while len(tracks) < track_no + 1:
+            tracks.append([])
+        tracks[track_no].append(n)
+    tracks_wo_empty = [t for t in tracks if t != []]
+    return tracks_wo_empty
+
+def humanize(g_quantized, g_human):
+    for g_quantized, g_human in zip(g_quantized,g_human):
+        human_dict = {}
+        print(len(g_human), len(g_quantized))
+        for n in g_human:
+            human_dict[n.pitch] = n
+        for n in g_quantized:
+            n.start_ticks = human_dict[n.pitch].start_ticks
+            n.start_time = human_dict[n.pitch].start_time
+            n.end_ticks = human_dict[n.pitch].end_ticks
+            n.end_time = human_dict[n.pitch].end_time
+            n.velocity = human_dict[n.pitch].velocity
 
 
 def midi_tests(config):
@@ -132,17 +197,18 @@ def midi_tests(config):
     filename_quantized = config["DEFAULT"]["PathToMidiFile"]
 
     notes_quantized = read_midi(filename_quantized)
+
     grouped_notes_quantized = group_notes_by_ticks(notes_quantized)
 
     notes_human = read_midi(filename_human)
     grouped_notes_human = group_notes_by_ticks(notes_human)
+    humanize(grouped_notes_quantized, grouped_notes_human)
 
-    grouped_notes_humanized = humanize_quantized_notes(grouped_notes_quantized, grouped_notes_human)
-
-
-    tracks = get_tracks_from_grouped_notes(grouped_notes_humanized)
-    for t in tracks:
-        render_track(t, config)
+    tracks = get_tracks_from_notes(notes_quantized)
+    for t_index, t in enumerate(tracks):
+        track_filename = "track_%i.wav" % t_index
+        if t_index in [0,1,2,3,4]:
+            render_track(t, config, track_filename)
 
 
 def get_config(filename):
