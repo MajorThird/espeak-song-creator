@@ -35,10 +35,14 @@ def group_notes_by_ticks(notes):
     return grouped
 
 def midi_tests(config):
-    filename = config["DEFAULT"]["PathToMidiFile"]
-    filename = config["DEFAULT"]["PathToMidiFileHuman"]
-    notes = read_midi(filename)
-    grouped_notes = group_notes_by_ticks(notes)
+    filename_human = config["DEFAULT"]["PathToMidiFileHuman"]
+    filename_quantized = config["DEFAULT"]["PathToMidiFile"]
+    
+    notes_quantized = read_midi(filename_quantized)
+    grouped_notes_quantized = group_notes_by_ticks(notes_quantized)
+
+    notes_human = read_midi(filename_human)
+    grouped_notes_human = group_notes_by_ticks(notes_human)
 
     for group in grouped_notes:
         for n in group:
