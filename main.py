@@ -34,20 +34,26 @@ def group_notes_by_ticks(notes):
 
     return grouped
 
+def humanize_quantized_notes(grouped_notes_quantized, grouped_notes_human):
+    for g_quantized, g_human in zip(grouped_notes_quantized,grouped_notes_human):
+        for note in g_quantized:
+            note.start_ticks = g_human[0].start_ticks
+    return grouped_notes_quantized
+
 def midi_tests(config):
     filename_human = config["DEFAULT"]["PathToMidiFileHuman"]
     filename_quantized = config["DEFAULT"]["PathToMidiFile"]
-    
+
     notes_quantized = read_midi(filename_quantized)
     grouped_notes_quantized = group_notes_by_ticks(notes_quantized)
 
     notes_human = read_midi(filename_human)
     grouped_notes_human = group_notes_by_ticks(notes_human)
 
-    for group in grouped_notes:
-        for n in group:
+    grouped_notes_humanized = humanize_quantized_notes(grouped_notes_quantized, grouped_notes_human)
+    for g in grouped_notes_humanized:
+        for n in g:
             print(n)
-        print("---")
 
 
 
