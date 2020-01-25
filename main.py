@@ -10,6 +10,11 @@ def is_note_off(event):
     return name == "Note Off" or velocity == 0
 
 
+def get_time_of_ticks(ticks, resolution, tempo_bpm):
+    time_per_beat = 60.0 / tempo_bpm
+    time_per_tick = time_per_beat / resolution
+    return time_per_tick * float(ticks)
+
 def read_midi(filename):
     midi_tracks = midi.read_midifile(filename)
     resolution = midi_tracks.resolution
@@ -20,8 +25,12 @@ def read_midi(filename):
             total_ticks += elem.tick
             if elem.name in ["Note On", "Note Off"]:
                 if not is_note_off(elem):
-                    n = note.Note(velocity=elem.data[1], pitch=elem.data[0], track=t_index, start_ticks=total_ticks)
+                    start_time = get_time_of_ticks(total_ticks, resolution, tempo_bpm)
+                    n = note.Note(velocity=elem.data[1], pitch=elem.data[0], track=t_index, start_ticks=total_ticks, start_time=start_time)
                     notes.append(n)
+            elif elem.name == "Set Tempo":
+                tempo_bpm = elem.get_bpm()
+                print("Tempo: " + str(tempo_bpm))
     notes = sorted(notes, key=lambda x: x.start_ticks)
     return notes
 
@@ -55,7 +64,7 @@ def get_tracks_from_grouped_notes(groups):
 
 def render_track(track):
     for n in track:
-        print(n.start_ticks)
+        pass
 
 
 def midi_tests(config):
