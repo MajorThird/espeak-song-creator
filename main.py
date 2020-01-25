@@ -18,18 +18,32 @@ def get_time_of_ticks(ticks, resolution, tempo_bpm):
 def read_midi(filename):
     midi_tracks = midi.read_midifile(filename)
     resolution = midi_tracks.resolution
-    notes = []
+    notes_pitchwise = [ [] for i in range(128)]
     for t_index, t in enumerate(midi_tracks):
         total_ticks = 0
         for elem in t:
             total_ticks += elem.tick
             if elem.name in ["Note On", "Note Off"]:
+                pitch = elem.data[0]
                 if not is_note_off(elem):
                     start_time = get_time_of_ticks(total_ticks, resolution, tempo_bpm)
-                    n = note.Note(velocity=elem.data[1], pitch=elem.data[0], track=t_index, start_ticks=total_ticks, start_time=start_time)
-                    notes.append(n)
+                    n = note.Note(velocity=elem.data[1], pitch=pitch, track=t_index, start_ticks=total_ticks, start_time=start_time)
+                    n.finished = False
+                    notes_pitchwise[pitch].append(n)
+                else:
+                    time_of_ticks = get_time_of_ticks(total_ticks, resolution, tempo_bpm)
+                    for n in reversed(notes_pitchwise[pitch]):
+                        if not n.finished:
+                            n.end_ticks = total_ticks
+                            n.end_time = time_of_ticks
+                            n.finished = True
+                        else:
+                            break
+
             elif elem.name == "Set Tempo":
                 tempo_bpm = elem.get_bpm()
+
+    notes = [n for l in notes_pitchwise for n in l]
     notes = sorted(notes, key=lambda x: x.start_ticks)
     return notes
 
@@ -48,6 +62,7 @@ def humanize_quantized_notes(grouped_notes_quantized, grouped_notes_human):
         for note in g_quantized:
             note.start_ticks = g_human[0].start_ticks
             note.start_time = g_human[0].start_time
+            note.end_time = g_human[0].end_time
             note.velocity = g_human[0].velocity
     return grouped_notes_quantized
 
@@ -63,8 +78,9 @@ def get_tracks_from_grouped_notes(groups):
     return tracks_wo_empty
 
 def render_track(track):
+
     for n in track:
-        pass
+        print(n.start_time, n.end_time)
 
 
 def midi_tests(config):
