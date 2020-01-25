@@ -2,10 +2,24 @@ import configparser
 import argparse
 import midi
 import note
+import os
 
+def get_pitch(frequency):
+    if frequency > 180.0:
+        return 99
+    elif frequency > 160.0:
+        return 89
+    elif frequency > 110.0:
+        return 59
+    elif frequency > 90.0:
+        return 39
+    elif frequency > 70.0:
+        return 10
+    else:
+        return 1
 
-def exec_espeak_command(syllable, language, frequency, pitch, speed, filename, lang):
-    path = ""
+def exec_espeak_command(path="./", syllable="a", language="de", frequency=100, speed=100, filename="out.wav"):
+    pitch = get_pitch(frequency)
     mute_string = "> /dev/null"
     program_call = "speak -w %s -v %s -s %i -p %i -e %i \"[[%s]]\" %s" % (filename, language, speed, pitch, frequency, syllable, mute_string)
     os.system(path + program_call)
@@ -124,6 +138,7 @@ def main():
     config = get_config(filename)
 
     midi_tests(config)
+    exec_espeak_command(path=config["DEFAULT"]["PathToESpeak"])
 
 
 if __name__ == '__main__':
