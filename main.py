@@ -3,6 +3,20 @@ import argparse
 import midi
 import note
 import os
+import subprocess
+
+def render_track(track, config):
+    os.system("mkdir -p tmp")
+    for n in track:
+        duration = n.end_time - n.start_time
+        filename = "./tmp/tmp.wav"
+        for s in range(60,300,55):
+            exec_espeak_command(syllable=n.syllable, path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
+        #print(n.syllable)
+    os.system("rm -r tmp")
+
+
+
 
 def get_pitch(frequency):
     if frequency > 180.0:
@@ -20,9 +34,21 @@ def get_pitch(frequency):
 
 def exec_espeak_command(path="./", syllable="a", language="de", frequency=70, speed=63, filename="out.wav"):
     pitch = get_pitch(frequency)
-    mute_string = "> /dev/null"
-    program_call = "speak -w %s -v %s -s %i -p %i -e %i \"[[%s]]\" %s" % (filename, language, speed, pitch, frequency, syllable, mute_string)
-    os.system(path + program_call)
+    call_list = [path + "speak"]
+    call_list.append("-w")
+    call_list.append(filename)
+    call_list.append("-v")
+    call_list.append(language)
+    call_list.append("-s")
+    call_list.append(str(speed))
+    call_list.append("-p")
+    call_list.append(str(pitch))
+    call_list.append("-e")
+    call_list.append(str(frequency))
+    call_list.append("[[%s]]" % syllable)
+    with open(os.devnull, 'wb') as quiet_output:
+        subprocess.call(call_list, stdout=quiet_output, stderr=quiet_output)
+
 
 
 
@@ -99,10 +125,6 @@ def get_tracks_from_grouped_notes(groups):
     tracks_wo_empty = [t for t in tracks if t != []]
     return tracks_wo_empty
 
-def render_track(track):
-
-    for n in track:
-        print(n.start_time, n.end_time)
 
 
 def midi_tests(config):
@@ -120,7 +142,7 @@ def midi_tests(config):
 
     tracks = get_tracks_from_grouped_notes(grouped_notes_humanized)
     for t in tracks:
-        render_track(t)
+        render_track(t, config)
 
 
 def get_config(filename):
@@ -139,13 +161,13 @@ def main():
 
     midi_tests(config)
 
-    for s in range(60,444,30):
-        filename = "%i.wav" % s
-        exec_espeak_command(syllable="hE", path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
-        from scipy.io import wavfile
-        samples_per_sec, wav_data = wavfile.read(filename)
-        sample_length = 1.0 / samples_per_sec
-        print("samples_per_sec", samples_per_sec, len(wav_data)*sample_length)
+    # for s in range(60,444,30):
+    #     filename = "%i.wav" % s
+    #     exec_espeak_command(syllable="hE", path=config["DEFAULT"]["PathToESpeak"], speed=s, filename=filename)
+    #     from scipy.io import wavfile
+    #     samples_per_sec, wav_data = wavfile.read(filename)
+    #     sample_length = 1.0 / samples_per_sec
+    #     print("samples_per_sec", samples_per_sec, len(wav_data)*sample_length)
 
 if __name__ == '__main__':
     main()
