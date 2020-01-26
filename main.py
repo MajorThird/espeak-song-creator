@@ -42,7 +42,6 @@ def render_track(track, config, track_filename):
                 total_wav = np.concatenate((total_wav, speech_wav))
                 total_wav = np.concatenate(
                     (total_wav, silence_to_compensate_short_audio))
-                #print("filename: " + str(track_filename) + "  current_time: " + str(current_time))
                 current_time = n.end_time
                 break
     scipy.io.wavfile.write("./output/" + track_filename,
@@ -157,7 +156,6 @@ def read_midi(filename):
 
             elif elem.name == "Set Tempo":
                 tempo_bpm = elem.get_bpm()
-                # print(tempo_bpm)
 
     notes = [n for l in notes_pitchwise for n in l]
     notes = sorted(notes, key=lambda x: x.start_ticks)
