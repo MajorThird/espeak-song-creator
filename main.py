@@ -176,9 +176,7 @@ def get_tracks_from_notes(notes):
 
 def convert(config):
     filename = config["DEFAULT"]["PathToMidiFile"]
-
     notes = read_midi(filename)
-
     tracks = get_tracks_from_notes(notes)
     phonemes = get_phonemes(config["DEFAULT"]["PathToPhonemes"])
     for t_index, t in enumerate(tracks):
