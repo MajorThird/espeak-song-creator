@@ -159,7 +159,6 @@ def read_midi(filename):
 
     notes = [n for l in notes_pitchwise for n in l]
     notes = sorted(notes, key=lambda x: x.start_ticks)
-
     return notes
 
 
@@ -208,7 +207,6 @@ def get_phonemes(filename):
 def main():
     subprocess.call(["rm", "-r", "output"])
     subprocess.call(["mkdir", "-p", "output"])
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-c",
@@ -217,10 +215,8 @@ def main():
         default="options.cfg",
         help="path to program options file")
     arguments = vars(parser.parse_args())
-
     filename = arguments["config"]
     config = get_config(filename)
-
     convert(config)
 
 
