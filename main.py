@@ -103,7 +103,7 @@ def get_frequency(midi_pitch, config):
     reference_freq = float(config["SOUND"]["ReferenceFrequency"])
     reference_midi_pitch = 69
     f = math.pow(2.0, (midi_pitch - reference_midi_pitch) /
-                 12.0) * reference_freq
+                12.0) * reference_freq
     return f
 
 
