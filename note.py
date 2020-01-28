@@ -15,7 +15,7 @@ class Note(object):
         self.start_time = start_time
         self.end_time = end_time
         self.phoneme = phoneme
-        self.finished = True
+        self.finished = False
 
     def calculate_start_and_end_time(self, tempo_bpm, resolution):
         self.start_time = get_time_of_ticks(self.start_ticks, resolution, tempo_bpm)
