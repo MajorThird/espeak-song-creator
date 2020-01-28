@@ -71,8 +71,8 @@ def render_track(track, config, track_filename):
 
             samples_per_sec, speech_wav = scipy.io.wavfile.read(filename)
             current_speed += step
-            if get_audio_duration(speech_wav,
-                                  samples_per_sec) <= n.end_time - n.start_time:
+            duration = get_audio_duration(speech_wav,samples_per_sec)
+            if duration <= n.end_time - n.start_time:
                 too_long = False
         track_wave = add_to_track_wave(
             track_wave, speech_wav, n, current_time, samples_per_sec)
@@ -90,11 +90,10 @@ def get_silent_wav(duration, samples_per_sec):
     return silent
 
 
-def get_speech_wav_with_dynamics(velocity, speech_wav):
+def get_speech_wav_with_dynamics(velocity, speech_wav, max_velocity=127.0):
     """
     Multiply speech_wav with the factor velocity/max_velocity.
     """
-    max_velocity = 127.0
     amplitude = velocity / max_velocity
     speech_wav_dynamic = (speech_wav * amplitude).astype(np.int16)
     return speech_wav_dynamic
