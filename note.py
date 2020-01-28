@@ -24,8 +24,12 @@ class Note(object):
             self.end_ticks, resolution, tempo_bpm)
 
     def __str__(self):
-        out_string = "Note velocity=%i pitch=%i start_ticks=%i end_ticks=%i start_time=%.3f end_time=%.3f phoneme=%s" % (
-            self.velocity, self.pitch, self.start_ticks, self.end_ticks, self.start_time, self.end_time, self.phoneme)
+        info = []
+        info.append("pitch=%i" % self.pitch)
+        info.append("velocity=%i" % self.velocity)
+        info.append("start_ticks=%i" % self.start_ticks)
+        info.append("end_ticks=%i" % self.end_ticks)
+        out_string = "Note " + " ".join()
         return out_string
 
 
