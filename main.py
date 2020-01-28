@@ -9,13 +9,33 @@ import numpy as np
 import math
 
 
+def add_pause_before_note(wav, n, current_time, samples_per_sec):
+    if n.start_time > current_time:
+        diff = n.start_time - current_time
+        silent_wav = get_silent_wav(diff, samples_per_sec)
+        wav = np.concatenate((wav, silent_wav))
+        return wav
+    else:
+        return wav
+
+def get_audio_duration(wav, samples_per_sec):
+    return len(wav) / float(samples_per_sec)
+
+def add_to_wave_of_track(wave_of_track, speech_wav, n, current_time, samples_per_sec):
+    wave_of_track = add_pause_before_note(wave_of_track, n, current_time, samples_per_sec)
+    note_duration = n.end_time - n.start_time
+    diff_audio_note = note_duration - get_audio_duration(speech_wav, samples_per_sec)
+    silence_to_compensate_short_audio = get_silent_wav(diff_audio_note, samples_per_sec)
+    speech_wav = get_speech_wav_with_dynamics(n.velocity, speech_wav)
+    wave_of_track = np.concatenate((wave_of_track, speech_wav))
+    wave_of_track = np.concatenate((wave_of_track, silence_to_compensate_short_audio))
+    return wave_of_track
+
 def render_track(track, config, track_filename):
-    subprocess.call(["mkdir", "-p", "tmp"])
-    total_wav = np.zeros(shape=(0), dtype=np.int16)
+    filename = "./tmp/tmp.wav"
+    wave_of_track = np.zeros(shape=(0), dtype=np.int16)
     current_time = 0.0
-    for n_index, n in enumerate(track):
-        duration = n.end_time - n.start_time
-        filename = "./tmp/tmp.wav"
+    for n in track:
         for s in range(55, 300, 3):
             freq = get_frequency(n.pitch)
             exec_espeak_command(
@@ -26,27 +46,13 @@ def render_track(track, config, track_filename):
                 filename=filename)
 
             samples_per_sec, speech_wav = scipy.io.wavfile.read(filename)
-            sample_length = 1.0 / samples_per_sec
-            audio_duration = len(speech_wav) * sample_length
-            if audio_duration <= duration:
-                if n.start_time > current_time:
-                    diff = n.start_time - current_time
-                    silent_wav = get_silent_wav(diff, samples_per_sec)
-                    total_wav = np.concatenate((total_wav, silent_wav))
-
-                diff_audio_note = duration - audio_duration
-                silence_to_compensate_short_audio = get_silent_wav(
-                    diff_audio_note, samples_per_sec)
-                speech_wav = get_speech_wav_with_dynamics(
-                    n.velocity, speech_wav)
-                total_wav = np.concatenate((total_wav, speech_wav))
-                total_wav = np.concatenate(
-                    (total_wav, silence_to_compensate_short_audio))
-                current_time = n.end_time
+            if get_audio_duration(speech_wav, samples_per_sec) <= n.end_time - n.start_time:
+                wave_of_track = add_to_wave_of_track(wave_of_track, speech_wav,
+                    n, current_time, samples_per_sec)
                 break
-    scipy.io.wavfile.write("./output/" + track_filename,
-                           samples_per_sec, total_wav)
-    subprocess.call(["rm", "-r", "tmp"])
+        current_time = n.end_time
+    scipy.io.wavfile.write("./output/" + track_filename, samples_per_sec, wave_of_track)
+
 
 
 def get_silent_wav(duration, samples_per_sec):
@@ -177,18 +183,27 @@ def calculate_note_time(note_tracks, tempo_bpm, resolution):
         for n in t:
             n.calculate_start_and_end_time(tempo_bpm, resolution)
 
+def render_tracks(note_tracks, config):
+    subprocess.call(["mkdir", "-p", "tmp"])
+    for t_index, t in enumerate(note_tracks):
+        track_filename = "track_%i.wav" % t_index
+        print("Render track " + str(t_index))
+        render_track(t, config, track_filename)
+    subprocess.call(["rm", "-r", "tmp"])
+
+def assign_phonemes_to_notes(note_tracks, phonemes):
+    for t_index, t in enumerate(note_tracks):
+        for note, phoneme in zip(t, phonemes[t_index]):
+            note.phoneme = phoneme
+
 
 def convert(config):
     filename = config["DEFAULT"]["PathToMidiFile"]
     note_tracks, tempo_bpm, resolution = read_midi(filename)
     calculate_note_time(note_tracks, tempo_bpm, resolution)
     phonemes = get_phonemes(config["DEFAULT"]["PathToPhonemes"])
-    for t_index, t in enumerate(note_tracks):
-        for note, phoneme in zip(t, phonemes[t_index]):
-            note.phoneme = phoneme
-        track_filename = "track_%i.wav" % t_index
-        print("Render track " + str(t_index))
-        render_track(t, config, track_filename)
+    assign_phonemes_to_notes(note_tracks, phonemes)
+    render_tracks(note_tracks, config)
 
 
 def get_config(filename):
