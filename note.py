@@ -29,7 +29,7 @@ class Note(object):
         info.append("velocity=%i" % self.velocity)
         info.append("start_ticks=%i" % self.start_ticks)
         info.append("end_ticks=%i" % self.end_ticks)
-        out_string = "Note " + " ".join()
+        out_string = "Note " + " ".join(info)
         return out_string
 
 
