@@ -13,23 +13,27 @@ def add_pause_before_note(wav, n, current_time, samples_per_sec):
     if n.start_time > current_time:
         diff = n.start_time - current_time
         silent_wav = get_silent_wav(diff, samples_per_sec)
-        np.concatenate((wav, silent_wav))
+        wav = np.concatenate((wav, silent_wav))
+        return wav
+    else:
+        return wav
 
 def get_audio_duration(wav, samples_per_sec):
     return len(wav) / float(samples_per_sec)
 
 def add_to_wave_of_track(wave_of_track, speech_wav, n, current_time, samples_per_sec):
-    add_pause_before_note(wave_of_track, n, current_time, samples_per_sec)
+    wave_of_track = add_pause_before_note(wave_of_track, n, current_time, samples_per_sec)
     note_duration = n.end_time - n.start_time
     diff_audio_note = note_duration - get_audio_duration(speech_wav, samples_per_sec)
     silence_to_compensate_short_audio = get_silent_wav(diff_audio_note, samples_per_sec)
     speech_wav = get_speech_wav_with_dynamics(n.velocity, speech_wav)
-    np.concatenate((wave_of_track, speech_wav, silence_to_compensate_short_audio))
-
+    wave_of_track = np.concatenate((wave_of_track, speech_wav))
+    wave_of_track = np.concatenate((wave_of_track, silence_to_compensate_short_audio))
+    return wave_of_track
 
 def render_track(track, config, track_filename):
     filename = "./tmp/tmp.wav"
-    wave_of_track = np.zeros(shape=0, dtype=np.int16)
+    wave_of_track = np.zeros(shape=(0), dtype=np.int16)
     current_time = 0.0
     for n in track:
         step = int(config["PERFORMANCE"]["StepESpeakSpeedIncrease"])
@@ -47,7 +51,7 @@ def render_track(track, config, track_filename):
             current_speed += step
             if get_audio_duration(speech_wav, samples_per_sec) <= n.end_time - n.start_time:
                 too_long = False
-        add_to_wave_of_track(wave_of_track, speech_wav, n, current_time, samples_per_sec)
+        wave_of_track = add_to_wave_of_track(wave_of_track, speech_wav, n, current_time, samples_per_sec)
         current_time = n.end_time
     scipy.io.wavfile.write("./output/" + track_filename, samples_per_sec, wave_of_track)
 
