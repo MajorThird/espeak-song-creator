@@ -65,12 +65,17 @@ def get_speech_wav_with_dynamics(velocity, speech_wav):
 def get_frequency(midi_pitch):
     reference_freq = 432.0
     reference_midi_pitch = 69
-    f = math.pow(2.0, (midi_pitch - reference_midi_pitch) /
-                 12.0) * reference_freq
+    f = math.pow(2.0, (midi_pitch - reference_midi_pitch) / 12.0) * reference_freq
     return f
 
 
 def get_pitch(frequency):
+    """
+    Depending on the frequency, one might
+    want to adjust the eSpeak command-line parameter p
+    to change the timbre. This function returns the values
+    I found pleasing.
+    """
     if frequency > 180.0:
         return 99
     elif frequency > 160.0:
@@ -109,76 +114,60 @@ def exec_espeak_command(
         subprocess.call(call_list, stdout=quiet_output, stderr=quiet_output)
 
 
-def is_note_off(event):
+def is_note_on(event):
     velocity = event.data[1]
-    name = event.name
-    return name == "Note Off" or velocity == 0
+    return event.name == "Note On" and velocity > 0
 
-
-def get_time_of_ticks(ticks, resolution, tempo_bpm):
-    time_per_beat = 60.0 / tempo_bpm
-    time_per_tick = time_per_beat / resolution
-    return time_per_tick * float(ticks)
-
+def flatten_list(l):
+    return [n for k in l for n in k]
 
 def read_midi(filename):
+    """
+    Create tracks containing Note objects.
+    The start and end times of the notes are not yet calculated;
+    this is done separately.
+    """
     midi_tracks = midi.read_midifile(filename)
     resolution = midi_tracks.resolution
-    notes_pitchwise = [[] for i in range(128)]
-    tempo_bpm = 200.0
+    tempo_bpm = 120.0 # may be changed repeatedly in the loop
+    note_tracks = []
     for t_index, t in enumerate(midi_tracks):
+        notes_pitchwise = [[] for i in range(128)]
         total_ticks = 0
         for elem in t:
             total_ticks += elem.tick
             if elem.name in ["Note On", "Note Off"]:
                 pitch = elem.data[0]
-                if not is_note_off(elem):
-                    start_time = get_time_of_ticks(
-                        total_ticks, resolution, tempo_bpm)
-                    n = note.Note(
-                        velocity=elem.data[1],
-                        pitch=pitch,
-                        track=t_index,
-                        start_ticks=total_ticks,
-                        start_time=start_time)
-                    n.finished = False
+                if is_note_on(elem):
+                    n = note.Note(velocity=elem.data[1],pitch=pitch,start_ticks=total_ticks)
                     notes_pitchwise[pitch].append(n)
                 else:
-                    time_of_ticks = get_time_of_ticks(
-                        total_ticks, resolution, tempo_bpm)
                     for n in reversed(notes_pitchwise[pitch]):
                         if not n.finished:
                             n.end_ticks = total_ticks
-                            n.end_time = time_of_ticks
                             n.finished = True
                         else:
                             break
-
             elif elem.name == "Set Tempo":
                 tempo_bpm = elem.get_bpm()
+        notes = flatten_list(notes_pitchwise)
+        notes = sorted(notes, key=lambda x: x.start_ticks)
+        if notes != []:
+            note_tracks.append(notes)
+    return note_tracks, tempo_bpm, resolution
 
-    notes = [n for l in notes_pitchwise for n in l]
-    notes = sorted(notes, key=lambda x: x.start_ticks)
-    return notes
-
-
-def get_tracks_from_notes(notes):
-    tracks = []
-    for n in notes:
-        track_no = n.track
-        while len(tracks) < track_no + 1:
-            tracks.append([])
-        tracks[track_no].append(n)
-    tracks_wo_empty = [t for t in tracks if t != []]
-    return tracks_wo_empty
+def calculate_note_time(note_tracks, tempo_bpm, resolution):
+    for t in note_tracks:
+        for n in t:
+            n.calculate_start_and_end_time(tempo_bpm, resolution)
 
 
 def convert(config):
     filename = config["DEFAULT"]["PathToMidiFile"]
-    notes = read_midi(filename)
-    tracks = get_tracks_from_notes(notes)
+    note_tracks, tempo_bpm, resolution = read_midi(filename)
+    calculate_note_time(note_tracks, tempo_bpm, resolution)
     phonemes = get_phonemes(config["DEFAULT"]["PathToPhonemes"])
-    for t_index, t in enumerate(tracks):
+    for t_index, t in enumerate(note_tracks):
         for note, phoneme in zip(t, phonemes[t_index]):
             note.phoneme = phoneme
         track_filename = "track_%i.wav" % t_index
