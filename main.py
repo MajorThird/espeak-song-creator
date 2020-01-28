@@ -37,19 +37,21 @@ def render_track(track, config, track_filename):
     current_time = 0.0
     for n in track:
         step = int(config["PERFORMANCE"]["StepESpeakSpeedIncrease"])
-        for s in range(60, 300, step):
+        current_speed = 60
+        too_long = True
+        while too_long:
             exec_espeak_command(
                 phoneme=n.phoneme,
                 frequency=get_frequency(n.pitch, config),
                 path=config["PATHS"]["PathToESpeak"],
-                speed=s,
+                speed=current_speed,
                 filename=filename)
 
             samples_per_sec, speech_wav = scipy.io.wavfile.read(filename)
+            current_speed += step
             if get_audio_duration(speech_wav, samples_per_sec) <= n.end_time - n.start_time:
-                wave_of_track = add_to_wave_of_track(wave_of_track, speech_wav,
-                    n, current_time, samples_per_sec)
-                break
+                too_long = False
+        wave_of_track = add_to_wave_of_track(wave_of_track, speech_wav, n, current_time, samples_per_sec)
         current_time = n.end_time
     scipy.io.wavfile.write("./output/" + track_filename, samples_per_sec, wave_of_track)
 
