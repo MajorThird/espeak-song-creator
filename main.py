@@ -10,6 +10,11 @@ import math
 
 
 def add_pause_before_note(wav, n, current_time, samples_per_sec):
+    """
+    This creates the pause that is required
+    if the start time of the note is larger than the end time
+    of the previous note.
+    """
     if n.start_time > current_time:
         diff = n.start_time - current_time
         silent_wav = get_silent_wav(diff, samples_per_sec)
