@@ -7,7 +7,7 @@ class Note(object):
             end_ticks=0,
             start_time=0.0,
             end_time=0.0,
-            phoneme="a"):
+            phoneme=None):
         self.velocity = velocity
         self.pitch = pitch
         self.start_ticks = start_ticks
