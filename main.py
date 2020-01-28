@@ -25,10 +25,9 @@ def add_to_wave_of_track(wave_of_track, speech_wav, n, current_time, samples_per
     wave_of_track = add_pause_before_note(wave_of_track, n, current_time, samples_per_sec)
     note_duration = n.end_time - n.start_time
     diff_audio_note = note_duration - get_audio_duration(speech_wav, samples_per_sec)
-    silence_to_compensate_short_audio = get_silent_wav(diff_audio_note, samples_per_sec)
+    silence_after = get_silent_wav(diff_audio_note, samples_per_sec)
     speech_wav = get_speech_wav_with_dynamics(n.velocity, speech_wav)
-    wave_of_track = np.concatenate((wave_of_track, speech_wav))
-    wave_of_track = np.concatenate((wave_of_track, silence_to_compensate_short_audio))
+    wave_of_track = np.concatenate((wave_of_track, speech_wav, silence_after))
     return wave_of_track
 
 def render_track(track, config, track_filename):
