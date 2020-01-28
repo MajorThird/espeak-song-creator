@@ -68,7 +68,8 @@ def get_speech_wav_with_dynamics(velocity, speech_wav):
 def get_frequency(midi_pitch):
     reference_freq = 432.0
     reference_midi_pitch = 69
-    f = math.pow(2.0, (midi_pitch - reference_midi_pitch) / 12.0) * reference_freq
+    f = math.pow(2.0, (midi_pitch - reference_midi_pitch) /
+                 12.0) * reference_freq
     return f
 
 
@@ -121,8 +122,10 @@ def is_note_on(event):
     velocity = event.data[1]
     return event.name == "Note On" and velocity > 0
 
+
 def flatten_list(l):
     return [n for k in l for n in k]
+
 
 def read_midi(filename):
     """
@@ -132,7 +135,7 @@ def read_midi(filename):
     """
     midi_tracks = midi.read_midifile(filename)
     resolution = midi_tracks.resolution
-    tempo_bpm = 120.0 # may be changed repeatedly in the loop
+    tempo_bpm = 120.0  # may be changed repeatedly in the loop
     note_tracks = []
     for t_index, t in enumerate(midi_tracks):
         notes_pitchwise = [[] for i in range(128)]
@@ -142,7 +145,10 @@ def read_midi(filename):
             if elem.name in ["Note On", "Note Off"]:
                 pitch = elem.data[0]
                 if is_note_on(elem):
-                    n = note.Note(velocity=elem.data[1],pitch=pitch,start_ticks=total_ticks)
+                    n = note.Note(
+                        velocity=elem.data[1],
+                        pitch=pitch,
+                        start_ticks=total_ticks)
                     notes_pitchwise[pitch].append(n)
                 else:
                     for n in reversed(notes_pitchwise[pitch]):
@@ -158,6 +164,7 @@ def read_midi(filename):
         if notes != []:
             note_tracks.append(notes)
     return note_tracks, tempo_bpm, resolution
+
 
 def calculate_note_time(note_tracks, tempo_bpm, resolution):
     for t in note_tracks:
@@ -186,6 +193,7 @@ def get_config(filename):
 
 def remove_multiple_whitespaces(s):
     return ' '.join(s.split())
+
 
 def get_phonemes(filename):
     phoneme_tracks = []

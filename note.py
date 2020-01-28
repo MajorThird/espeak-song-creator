@@ -18,14 +18,15 @@ class Note(object):
         self.finished = False
 
     def calculate_start_and_end_time(self, tempo_bpm, resolution):
-        self.start_time = get_time_of_ticks(self.start_ticks, resolution, tempo_bpm)
-        self.end_time = get_time_of_ticks(self.end_ticks, resolution, tempo_bpm)
+        self.start_time = get_time_of_ticks(
+            self.start_ticks, resolution, tempo_bpm)
+        self.end_time = get_time_of_ticks(
+            self.end_ticks, resolution, tempo_bpm)
 
     def __str__(self):
         out_string = "Note velocity=%i pitch=%i start_ticks=%i end_ticks=%i start_time=%.3f end_time=%.3f phoneme=%s" % (
             self.velocity, self.pitch, self.start_ticks, self.end_ticks, self.start_time, self.end_time, self.phoneme)
         return out_string
-
 
 
 def get_time_of_ticks(ticks, resolution, tempo_bpm):
