@@ -56,6 +56,9 @@ def get_silent_wav(duration, samples_per_sec):
 
 
 def get_speech_wav_with_dynamics(velocity, speech_wav):
+    """
+    Multiply the wav with the factor velocity/max_velocity.
+    """
     max_velocity = 127.0
     amplitude = velocity / max_velocity
     speech_wav_dynamic = (speech_wav * amplitude).astype(np.int16)
