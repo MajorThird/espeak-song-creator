@@ -54,7 +54,7 @@ def add_to_track_wave(
 
 
 def render_track(track, config, track_filename):
-    filename = "./tmp/tmp.wav"
+    tmp_wav_filename = "./tmp/tmp.wav"
     track_wave = np.zeros(shape=(0), dtype=np.int16)
     current_time = 0.0
     for n in track:
@@ -67,9 +67,9 @@ def render_track(track, config, track_filename):
                 frequency=get_frequency(n.pitch, config),
                 path=config["PATHS"]["PathToESpeak"],
                 speed=current_speed,
-                filename=filename)
+                filename=tmp_wav_filename)
 
-            samples_per_sec, speech_wav = scipy.io.wavfile.read(filename)
+            samples_per_sec, speech_wav = scipy.io.wavfile.read(tmp_wav_filename)
             current_speed += step
             duration = get_audio_duration(speech_wav,samples_per_sec)
             if duration <= n.end_time - n.start_time:
