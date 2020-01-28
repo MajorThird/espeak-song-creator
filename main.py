@@ -57,7 +57,7 @@ def get_silent_wav(duration, samples_per_sec):
 
 def get_speech_wav_with_dynamics(velocity, speech_wav):
     """
-    Multiply the wav with the factor velocity/max_velocity.
+    Multiply speech_wav with the factor velocity/max_velocity.
     """
     max_velocity = 127.0
     amplitude = velocity / max_velocity
@@ -101,6 +101,12 @@ def exec_espeak_command(
         frequency=70,
         speed=63,
         filename="out.wav"):
+    """
+    This runs eSpeak. eSpeak creates a wave file.
+    Please note that this only works with a modified
+    version of eSpeak that accepts the command-line
+    parameter e for the frequency of the note.
+    """
     pitch = get_pitch(frequency)
     call_list = [path + "speak"]
     call_list.append("-w")
