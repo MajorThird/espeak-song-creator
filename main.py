@@ -207,7 +207,7 @@ def read_midi(filename):
     return note_tracks, tempo_bpm, resolution
 
 
-def calculate_note_time(note_tracks, tempo_bpm, resolution):
+def calculate_note_times(note_tracks, tempo_bpm, resolution):
     for t in note_tracks:
         for n in t:
             n.calculate_start_and_end_time(tempo_bpm, resolution)
@@ -231,7 +231,7 @@ def assign_phonemes_to_notes(note_tracks, phonemes):
 def convert(config):
     filename = config["PATHS"]["PathToMidiFile"]
     note_tracks, tempo_bpm, resolution = read_midi(filename)
-    calculate_note_time(note_tracks, tempo_bpm, resolution)
+    calculate_note_times(note_tracks, tempo_bpm, resolution)
     phonemes = get_phonemes(config["PATHS"]["PathToPhonemes"])
     assign_phonemes_to_notes(note_tracks, phonemes)
     render_tracks(note_tracks, config)
