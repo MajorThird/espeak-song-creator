@@ -36,12 +36,12 @@ def render_track(track, config, track_filename):
     wave_of_track = np.zeros(shape=(0), dtype=np.int16)
     current_time = 0.0
     for n in track:
-        for s in range(55, 300, 3):
-            freq = get_frequency(n.pitch)
+        step = int(config["PERFORMANCE"]["StepESpeakSpeedIncrease"])
+        for s in range(60, 300, step):
             exec_espeak_command(
                 phoneme=n.phoneme,
-                frequency=freq,
-                path=config["DEFAULT"]["PathToESpeak"],
+                frequency=get_frequency(n.pitch, config),
+                path=config["PATHS"]["PathToESpeak"],
                 speed=s,
                 filename=filename)
 
@@ -71,8 +71,8 @@ def get_speech_wav_with_dynamics(velocity, speech_wav):
     return speech_wav_dynamic
 
 
-def get_frequency(midi_pitch):
-    reference_freq = 432.0
+def get_frequency(midi_pitch, config):
+    reference_freq = config["SOUND"]["ReferenceFrequency"]
     reference_midi_pitch = 69
     f = math.pow(2.0, (midi_pitch - reference_midi_pitch) /
                  12.0) * reference_freq
@@ -198,10 +198,10 @@ def assign_phonemes_to_notes(note_tracks, phonemes):
 
 
 def convert(config):
-    filename = config["DEFAULT"]["PathToMidiFile"]
+    filename = config["PATHS"]["PathToMidiFile"]
     note_tracks, tempo_bpm, resolution = read_midi(filename)
     calculate_note_time(note_tracks, tempo_bpm, resolution)
-    phonemes = get_phonemes(config["DEFAULT"]["PathToPhonemes"])
+    phonemes = get_phonemes(config["PATHS"]["PathToPhonemes"])
     assign_phonemes_to_notes(note_tracks, phonemes)
     render_tracks(note_tracks, config)
 
