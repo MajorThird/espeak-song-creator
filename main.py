@@ -192,10 +192,14 @@ def get_config(filename):
     return config
 
 
+def remove_multiple_whitespaces(s):
+    return ' '.join(s.split())
+
 def get_phonemes(filename):
     phoneme_tracks = []
     with open(filename) as infile:
-        content = infile.read().replace("\n", " ").replace("  ", " ")
+        content = infile.read().replace("\n", " ")
+        content = remove_multiple_whitespaces(content)
         for c in content.split(" "):
             if c == "[track]":
                 phoneme_tracks.append([])
