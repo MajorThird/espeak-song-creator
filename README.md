@@ -9,7 +9,7 @@ The program takes a MIDI file and a text file as an input.
 
 ## How to modify eSpeak
 Unfortunately, my code does not run out of the box.
-If you want to use it, you must download eSpeak, modify the code and compile it.
+If you want to use it, you must download eSpeak, modify its code and compile it.
 * You should start by implementing a method to control the pitch of the
 spoken/sung tones. The built-in method (command-line parameter p) is not suffucient because you have to set the exact frequency. I have shown how to do this in a
 [ YouTube video](https://www.youtube.com/watch?v=UTu5fP0lrjY).
