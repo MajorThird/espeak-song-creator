@@ -68,7 +68,6 @@ def render_track(track, config, track_filename):
                 path=config["PATHS"]["PathToESpeak"],
                 speed=current_speed,
                 filename=tmp_wav_filename)
-
             samples_per_sec, speech_wav = scipy.io.wavfile.read(tmp_wav_filename)
             current_speed += step
             duration = get_audio_duration(speech_wav,samples_per_sec)
