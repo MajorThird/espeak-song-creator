@@ -11,7 +11,7 @@ The program takes a MIDI file and a text file as an input.
 Unfortunately, my code does not run out of the box.
 If you want to use it, you must download eSpeak, modify its code and compile it.
 * You should start by implementing a method to control the pitch of the
-spoken/sung tones. The built-in method (command-line parameter p) is not suffucient because you have to set the exact frequency. I have shown how to do this in a
+spoken/sung tones. The built-in method (command-line parameter p) is not sufficient because you have to set the exact frequency. I have shown how to do this in a
 [ YouTube video](https://www.youtube.com/watch?v=UTu5fP0lrjY).
 * You have to implement a new  command-line parameter to set the frequency. I gave it the letter e. I have not covered this in the aforementioned tutorial.
 
