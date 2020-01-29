@@ -57,8 +57,8 @@ def render_track(track, config, track_filename):
     tmp_wav_filename = "./tmp/tmp.wav"
     track_wave = np.zeros(shape=(0), dtype=np.int16)
     current_time = 0.0
+    step = int(config["PERFORMANCE"]["StepESpeakSpeedIncrease"])
     for n in track:
-        step = int(config["PERFORMANCE"]["StepESpeakSpeedIncrease"])
         current_speed = 60
         too_long = True
         while too_long:
